@@ -292,6 +292,7 @@
     <ClCompile Include="..\logging.c" />
     <ClCompile Include="..\algorithm\marucoin.c" />
     <ClCompile Include="..\algorithm\maxcoin.c" />
+    <ClCompile Include="..\algorithm\metro.c" />
     <ClCompile Include="..\algorithm\myriadcoin-groestl.c" />
     <ClCompile Include="..\ocl.c" />
     <ClCompile Include="..\ocl\binary_kernel.c" />
@@ -360,6 +361,7 @@
     <ClInclude Include="..\logging.h" />
     <ClInclude Include="..\algorithm\marucoin.h" />
     <ClInclude Include="..\algorithm\maxcoin.h" />
+    <ClInclude Include="..\algorithm\metro.h" />
     <ClInclude Include="..\miner.h" />
     <ClInclude Include="..\algorithm\myriadcoin-groestl.h" />
     <ClInclude Include="..\ocl.h" />

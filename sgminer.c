@@ -7189,10 +7189,15 @@ static void rebuild_nonce(struct work *work, uint32_t nonce)
   else if (work->pool->algorithm.type == ALGO_LBRY) nonce_pos = 108;
   else if (work->pool->algorithm.type == ALGO_SIA) nonce_pos = 32;
   else if (work->pool->algorithm.type == ALGO_PASCAL) nonce_pos = 196;
+  else if (work->pool->algorithm.type == ALGO_KECCAKM) nonce_pos = 94;
 
   uint32_t *work_nonce = (uint32_t *)(work->data + nonce_pos);
-
-  *work_nonce = htole32(nonce);
+  if (work->pool->algorithm.type == ALGO_KECCAKM) {
+    *work_nonce = swab32(nonce);
+  }
+  else {
+    *work_nonce = htole32(nonce);
+  }
 
   work->pool->algorithm.regenhash(work);
 }

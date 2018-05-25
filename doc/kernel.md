@@ -81,6 +81,7 @@ Only supports `vectors=1` and `lookup-gap=2`.
 #### sifcoin
 #### twecoin
 #### maxcoin
+#### metro
 
 ## Submitting new kernels
 

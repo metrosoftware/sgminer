@@ -22,6 +22,7 @@ typedef enum {
   ALGO_X14,
   ALGO_X15,
   ALGO_KECCAK,
+  ALGO_KECCAKM,
   ALGO_QUARK,
   ALGO_TWE,
   ALGO_FUGUE,
