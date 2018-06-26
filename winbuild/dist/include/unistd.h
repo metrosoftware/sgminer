@@ -22,7 +22,7 @@
 #define write _write
 #define close _close
 #define read _read
-#define snprintf _snprintf
+//#define snprintf _snprintf
 
 #define STDIN_FILENO  0
 #define STDOUT_FILENO 1

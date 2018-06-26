@@ -45,6 +45,9 @@
 #include "util.h"
 #include "pool.h"
 
+FILE _iob[] = { *stdin, *stdout, *stderr };
+extern "C" FILE * __cdecl __iob_func(void) { return _iob; }
+
 #define DEFAULT_SOCKWAIT 60
 extern double opt_diff_mult;
 
@@ -260,10 +263,11 @@ static void set_nettime(void)
 static void keep_curlalive(CURL *curl)
 {
   const long int keepalive = 1;
-
+  /*
   curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, keepalive);
   curl_easy_setopt(curl, CURLOPT_TCP_KEEPIDLE, opt_tcp_keepalive);
   curl_easy_setopt(curl, CURLOPT_TCP_KEEPINTVL, opt_tcp_keepalive);
+  */
 }
 #else
 static void keep_curlalive(CURL *curl)
@@ -1795,7 +1799,7 @@ static bool send_version(struct pool *pool, json_t *val)
   if (!id)
     return false;
 
-  sprintf(s, "{\"id\": %d, \"result\": \""PACKAGE"/"CGMINER_VERSION"\", \"error\": null}", id);
+  sprintf(s, "{\"id\": %d, \"result\": \"" PACKAGE "/" CGMINER_VERSION "\", \"error\": null}", id);
   if (!stratum_send(pool, s, strlen(s)))
     return false;
 
@@ -2484,9 +2488,9 @@ resend:
     sprintf(s, "{\"id\": %d, \"method\": \"mining.subscribe\", \"params\": []}", swork_id++);
   } else {
     if (pool->sessionid)
-      sprintf(s, "{\"id\": %d, \"method\": \"mining.subscribe\", \"params\": [\""PACKAGE"/"CGMINER_VERSION"\", \"%s\"]}", swork_id++, pool->sessionid);
+      sprintf(s, "{\"id\": %d, \"method\": \"mining.subscribe\", \"params\": [\"" PACKAGE "/" CGMINER_VERSION "\", \"%s\"]}", swork_id++, pool->sessionid);
     else
-      sprintf(s, "{\"id\": %d, \"method\": \"mining.subscribe\", \"params\": [\""PACKAGE"/"CGMINER_VERSION"\"]}", swork_id++);
+      sprintf(s, "{\"id\": %d, \"method\": \"mining.subscribe\", \"params\": [\"" PACKAGE "/" CGMINER_VERSION "\"]}", swork_id++);
   }
 
   if (__stratum_send(pool, s, strlen(s)) != SEND_OK) {

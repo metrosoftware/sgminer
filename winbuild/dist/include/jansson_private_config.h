@@ -49,9 +49,9 @@
 
 /* #undef HAVE_SNPRINTF */
 
-#ifndef HAVE_SNPRINTF
-#  define snprintf _snprintf
-#endif
+//#ifndef HAVE_SNPRINTF
+//#  define snprintf _snprintf
+//#endif
 
 /* #undef HAVE_VSNPRINTF */
 
