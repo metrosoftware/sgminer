@@ -93,6 +93,15 @@ void sha256(const unsigned char *message, unsigned int len, unsigned char *diges
   sph_sha256_close(&ctx_sha2, (void*)digest);
 }
 
+void keccak256(const unsigned char *message, unsigned int len, unsigned char *digest)
+{
+  sph_keccak256_context ctx_keccak256;
+
+  sph_keccak256_init(&ctx_keccak256);
+  sph_keccak256(&ctx_keccak256, message, len);
+  sph_keccak256_close(&ctx_keccak256, (void*)digest);
+}
+
 void gen_hash(const unsigned char *data, unsigned int len, unsigned char *hash)
 {
   unsigned char hash1[32];
@@ -1204,7 +1213,7 @@ static algorithm_settings_t algos[] = {
 
   { "twecoin", ALGO_TWE, "", 1, 1, 1, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 0, 0, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, twecoin_regenhash, NULL, NULL, queue_sph_kernel, sha256, NULL },
   { "maxcoin", ALGO_KECCAK, "", 1, 256, 1, 4, 15, 0x0F, 0xFFFFULL, 0x000000ffUL, 0, 0, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, maxcoin_regenhash, NULL, NULL, queue_maxcoin_kernel, sha256, NULL },
-  { "metro", ALGO_KECCAKM, "", 1, 256, 1, 4, 15, 0x0F, 0xFFFFULL, 0x000000ffUL, 0, 0, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, metro_regenhash, NULL, NULL, queue_metro_kernel, sha256, NULL },
+  { "metro", ALGO_KECCAKM, "", 1, 256, 1, 4, 15, 0x0F, 0xFFFFULL, 0x000000ffUL, 0, 0, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, metro_regenhash, NULL, NULL, queue_metro_kernel, keccak256, NULL },
 
   { "darkcoin-mod", ALGO_X11, "", 1, 1, 1, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 10, 8 * 16 * 4194304, 0, darkcoin_regenhash, NULL, NULL, queue_darkcoin_mod_kernel, gen_hash, append_x11_compiler_options },
 

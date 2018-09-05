@@ -5627,6 +5627,9 @@ static void *stratum_sthread(void *userdata)
     else if (pool->algorithm.type == ALGO_DECRED) {
       nonce = *((uint32_t *)(work->data + 140));
     }
+    else if (pool->algorithm.type == ALGO_KECCAKM) {
+      nonce = *((uint32_t *)(work->data + 94));
+    }
     else if (pool->algorithm.type == ALGO_LBRY) {
       nonce = *((uint32_t *)(work->data + 108));
     }
@@ -6213,6 +6216,10 @@ static void gen_stratum_work(struct pool *pool, struct work *work)
     /* Add the nbits (big endianess). */
     ((uint32_t *)work->data)[48] = be32toh(temp);
     ((uint32_t *)work->data)[49] = 0;
+  }
+  else if (pool->algorithm.type == ALGO_KECCAKM) {
+    memcpy(work->data, pool->header_bin, 128);
+    memcpy(work->data + pool->merkle_offset, merkle_sha, 32);
   }
   else {
     data32 = (uint32_t *)merkle_sha;

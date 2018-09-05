@@ -10,6 +10,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include "ocl/build_kernel.h"   // For the build_kernel_data type
+#include "sph/sph_keccak.h"
 
 typedef enum {
   ALGO_UNK,
