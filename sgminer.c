@@ -2089,6 +2089,13 @@ static double get_work_blockdiff(const struct work *work)
     if (shift == 28) d *= 256.0; // testnet
     return d;
   }
+  else if (work->pool->algorithm.type == ALGO_KECCAKM) {
+	  shift = work->data[93];
+	  powdiff = 8 * (0x1d - shift);
+	  uint32_t *diff_be = (uint32_t *)(work->data + 90);
+	  diff64 = be32toh(swab32(*diff_be)) & 0x0000000000FFFFFF;
+	  numerator = work->pool->algorithm.diff_numerator << powdiff;
+  }
   else {
     shift = work->data[72];
     powdiff = (8 * (0x1d - 3)) - (8 * (shift - 3));;
@@ -7212,8 +7219,9 @@ static void rebuild_nonce(struct work *work, uint32_t nonce)
 /* For testing a nonce against diff 1 */
 bool test_nonce(struct work *work, uint32_t nonce)
 {
-  uint32_t *hash_32 = (uint32_t *)(work->hash + 28);
-  uint32_t diff1targ;
+  uint32_t *hash_32_1 = (uint32_t *)(work->hash + 28);
+  uint32_t *hash_32_2 = (uint32_t *)(work->hash + 24);
+  uint32_t diff1targ, diff2targ = 0xFFFFFF;
 
   rebuild_nonce(work, nonce);
 
@@ -7222,11 +7230,17 @@ bool test_nonce(struct work *work, uint32_t nonce)
     || work->pool->algorithm.type == ALGO_YESCRYPT || work->pool->algorithm.type == ALGO_YESCRYPT_MULTI) {
     diff1targ = ((uint32_t *)work->target)[7];
   }
+  if (work->pool->algorithm.type == ALGO_KECCAKM) {
+	  diff1targ = ((uint32_t *)work->target)[7];
+	  diff2targ = ((uint32_t *)work->target)[6];
+	  //applog(LOG_WARNING, "%08x::%08x>%08x::%08x", diff1targ, diff2targ, le32toh(*hash_32_1), le32toh(*hash_32_2));
+  }
   else {
     diff1targ = work->pool->algorithm.diff1targ;
   }
+  if (le32toh(*hash_32_1) < diff1targ) return true;
 
-  return (le32toh(*hash_32) <= diff1targ);
+  return (le32toh(*hash_32_1) == diff1targ && le32toh(*hash_32_2) <= diff2targ);
 }
 
 static void update_work_stats(struct thr_info *thr, struct work *work)
