@@ -84,8 +84,11 @@ void keccak_block_noabsorb(ARGS_25(uint2* s))
   RND(23);
 }
 
+#define rotl(x,y) rotate(x,y)
+#define EndianSwap(n) (rotl(n & 0x00FF00FF, 24U)|rotl(n & 0xFF00FF00, 8U))
+
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search(__global const uint2*restrict in, __global uint*restrict output)
+__kernel void search(__global const uint2*restrict in, __global uint*restrict output, const uint shift, const uint target)
 {
   uint2 ARGS_25(state);
   uint id = get_global_id(0);
@@ -120,8 +123,14 @@ __kernel void search(__global const uint2*restrict in, __global uint*restrict ou
 #define FOUND (0x0F)
 #define SETFOUND(Xnonce) output[output[FOUND]++] = Xnonce
 
-  if ((state3.y & 0xFFFFFFF0U) == 0)
-  {
-    SETFOUND(get_global_id(0));
+  bool result = false;
+  if (shift == 0) {
+    result = (EndianSwap(state3.y) <= target);
+  } else if (shift == 1) {
+    result = (state3.y == 0) && (EndianSwap(state3.x) <= target);
+  } else {
+    result = (state3.y == 0) && (state3.x == 0) && (EndianSwap(state2.y) <= target);
   }
+  if (result)
+    SETFOUND(get_global_id(0));
 }

@@ -398,12 +398,26 @@ static cl_int queue_metro_kernel(struct __clState *clState, struct _dev_blk_ctx 
   cl_kernel *kernel = &clState->kernel;
   unsigned int num = 0;
   cl_int status = 0;
+  cl_uint shift = 0;
+  cl_uint le_target;
+
+  le_target = (cl_uint)le32toh(((uint32_t *)blk->work->/*device_*/target)[7]);
+  if (le_target == 0) {
+    shift = 1;
+    le_target = (cl_uint)le32toh(((uint32_t *)blk->work->/*device_*/target)[6]);
+  }
+  if (le_target == 0) {
+    shift = 2;
+    le_target = (cl_uint)le32toh(((uint32_t *)blk->work->/*device_*/target)[5]);
+  }
 
   memcpy(clState->cldata, blk->work->data, 102);
   status = clEnqueueWriteBuffer(clState->commandQueue, clState->CLbuffer0, true, 0, 102, clState->cldata, 0, NULL, NULL);
 
   CL_SET_ARG(clState->CLbuffer0);
   CL_SET_ARG(clState->outputBuffer);
+  CL_SET_ARG(shift);
+  CL_SET_ARG(le_target);
 
   return status;
 }
@@ -499,7 +513,7 @@ static cl_int queue_sibcoin_mod_kernel(struct __clState *clState, struct _dev_bl
   // keccak - search5
   CL_NEXTKERNEL_SET_ARG_0(clState->padbuffer8);
   // gost - search6
-  CL_NEXTKERNEL_SET_ARG_0(clState->padbuffer8);  
+  CL_NEXTKERNEL_SET_ARG_0(clState->padbuffer8);
   // luffa - search7
   CL_NEXTKERNEL_SET_ARG_0(clState->padbuffer8);
   // cubehash - search8
@@ -1142,7 +1156,7 @@ static cl_int queue_lbry_kernel(struct __clState *clState, struct _dev_blk_ctx *
   kernel = clState->extra_kernels;
   CL_SET_ARG_0(clState->padbuffer8);
   num = 0;
-  
+
   CL_NEXTKERNEL_SET_ARG(clState->padbuffer8);
   CL_SET_ARG(clState->outputBuffer);
   CL_SET_ARG(le_target);
@@ -1206,7 +1220,7 @@ static algorithm_settings_t algos[] = {
 #define A_DARK(a, b) \
   { a, ALGO_X11, "", 1, 1, 1, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 0, 0, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, b, NULL, NULL, queue_sph_kernel, gen_hash, append_x11_compiler_options }
   A_DARK("darkcoin", darkcoin_regenhash),
-  A_DARK("sibcoin", sibcoin_regenhash),  
+  A_DARK("sibcoin", sibcoin_regenhash),
   A_DARK("inkcoin", inkcoin_regenhash),
   A_DARK("myriadcoin-groestl", myriadcoin_groestl_regenhash),
 #undef A_DARK
@@ -1218,7 +1232,7 @@ static algorithm_settings_t algos[] = {
   { "darkcoin-mod", ALGO_X11, "", 1, 1, 1, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 10, 8 * 16 * 4194304, 0, darkcoin_regenhash, NULL, NULL, queue_darkcoin_mod_kernel, gen_hash, append_x11_compiler_options },
 
   { "sibcoin-mod", ALGO_X11, "", 1, 1, 1, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 11, 2 * 16 * 4194304, 0, sibcoin_regenhash, NULL, NULL, queue_sibcoin_mod_kernel, gen_hash, append_x11_compiler_options },
-  
+
   { "marucoin", ALGO_X13, "", 1, 1, 1, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 0, 0, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, marucoin_regenhash, NULL, NULL, queue_sph_kernel, gen_hash, append_x13_compiler_options },
   { "marucoin-mod", ALGO_X13, "", 1, 1, 1, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 12, 8 * 16 * 4194304, 0, marucoin_regenhash, NULL, NULL, queue_marucoin_mod_kernel, gen_hash, append_x13_compiler_options },
   { "marucoin-modold", ALGO_X13, "", 1, 1, 1, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 10, 8 * 16 * 4194304, 0, marucoin_regenhash, NULL, NULL, queue_marucoin_mod_old_kernel, gen_hash, append_x13_compiler_options },
