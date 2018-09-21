@@ -4380,12 +4380,18 @@ static bool test_work_current(struct work *work)
   unsigned char bedata[32];
   char hexstr[68];
   bool ret = true;
+  int bedata_size = 32;
+  if (work->pool->algorithm.type == ALGO_KECCAKM) bedata_size = 16;
 
   if (work->mandatory)
     return ret;
 
-  swap256(bedata, work->data + 4);
-  __bin2hex(hexstr, bedata, 32);
+  if (work->pool->algorithm.type == ALGO_KECCAKM) {
+    for (int i=0; i<16; i++) bedata[i] = work->data[i+2];
+  } else {
+    swap256(bedata, work->data + 4);
+  }
+  __bin2hex(hexstr, bedata, bedata_size);
 
   /* Search to see if this block exists yet and if not, consider it a
    * new block and set the current block details to this one */
@@ -4443,12 +4449,12 @@ static bool test_work_current(struct work *work)
   }
     restart_threads();
   } else {
-    if (memcmp(pool->prev_block, bedata, 32)) {
+    if (memcmp(pool->prev_block, bedata, bedata_size)) {
       /* Work doesn't match what this pool has stored as
        * prev_block. Let's see if the work is from an old
        * block or the pool is just learning about a new
        * block. */
-      if (memcmp(bedata, current_block, 32)) {
+      if (memcmp(bedata, current_block, bedata_size)) {
         /* Doesn't match current block. It's stale */
         applog(LOG_DEBUG, "Stale data from %s", get_pool_name(pool));
         ret = false;
@@ -4456,7 +4462,7 @@ static bool test_work_current(struct work *work)
         /* Work is from new block and pool is up now
          * current. */
         applog(LOG_INFO, "%s now up to date", get_pool_name(pool));
-        memcpy(pool->prev_block, bedata, 32);
+        memcpy(pool->prev_block, bedata, bedata_size);
       }
     }
 #if 0
